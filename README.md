@@ -5,7 +5,7 @@ This application runs in the background and will show a floating widget whenever
 
 The app can be easily controlled with a tray icon and a settings panel.
 
-This app is powered by Flutter and works with WindowsAPI.
+This app is built for Windows, powered by Flutter, and works with WindowsAPI.
 
 ## Key Features
 
