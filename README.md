@@ -1,16 +1,17 @@
 # floating_fullscreen_widget
 
-A new Flutter project.
+It is easy to lose a sense of time when using programs or games on fullscreen.
+This application runs in the background and will show a floating widget whenever you are going fullscreen. This simple widget will show the current time and your battery status to keep you up-to-date, while not interrupting your work or gaming session!
 
-## Getting Started
+The app can be easily controlled with a tray icon and a settings panel.
 
-This project is a starting point for a Flutter application.
+This app is built for Windows, powered by Flutter, and works with WindowsAPI.
 
-A few resources to get you started if this is your first Flutter project:
+## Key Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+* Whitelisting windows to show the widget in
+* Changing refresh times
+* Run on startup
+* Temporarily disable the widget
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### (Screenshots will be added soon!)
