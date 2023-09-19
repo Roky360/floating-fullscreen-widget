@@ -26,6 +26,7 @@ class BatteryWidget extends StatelessWidget {
   final Color chargingColor = Colors.green;
   final Color defaultColor = Colors.white;
   final Color fullColor = Colors.tealAccent;
+  final Color batterySaverColor = Colors.orangeAccent;
 
   Future<BatteryResult> getBatteryPercentage() async {
     final perc = await battery.batteryLevel;
@@ -35,27 +36,31 @@ class BatteryWidget extends StatelessWidget {
     bool isCharging = false;
 
     late final Color color;
-    switch (state) {
-      case BatteryState.charging:
-        isCharging = true;
-        color = chargingColor;
-        break;
-      case BatteryState.discharging:
-        if (perc <= 10) {
-          color = superLowColor;
-        } else if (perc <= 20) {
-          color = lowColor;
-        } else {
+    if (saveMode) {
+      color = batterySaverColor;
+    } else {
+      switch (state) {
+        case BatteryState.charging:
+          isCharging = true;
+          color = chargingColor;
+          break;
+        case BatteryState.discharging:
+          if (perc <= 10) {
+            color = superLowColor;
+          } else if (perc <= 20) {
+            color = lowColor;
+          } else {
+            color = defaultColor;
+          }
+          break;
+        case BatteryState.full:
+          isFull = true;
+          color = fullColor;
+          break;
+        default:
           color = defaultColor;
-        }
-        break;
-      case BatteryState.full:
-        isFull = true;
-        color = fullColor;
-        break;
-      default:
-        color = defaultColor;
-        break;
+          break;
+      }
     }
 
     return BatteryResult(
@@ -75,7 +80,7 @@ class BatteryWidget extends StatelessWidget {
     } else if (res.isFull) {
       return Icon(Icons.battery_charging_full, color: fullColor, size: size);
     } else if (res.isInSaveMode) {
-      return Icon(Icons.energy_savings_leaf, color: lowColor, size: size);
+      return Icon(Icons.energy_savings_leaf, color: batterySaverColor, size: size);
     } else {
       return const SizedBox();
     }
@@ -101,12 +106,12 @@ class BatteryWidget extends StatelessWidget {
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
-                    ?.copyWith(color: data.displayColor, fontSize: 13),
+                    ?.copyWith(color: data.displayColor, fontSize: 14),
               ),
             ],
           );
         } else {
-          return const Text("?? %");
+          return const Text("");
         }
       },
     );

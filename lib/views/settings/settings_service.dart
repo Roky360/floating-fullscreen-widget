@@ -14,10 +14,11 @@ class SettingsService {
   /* ************** */
 
   // global constants
-  static const Size widgetViewSize = Size(160, 75);
+  static const Size spaciousWidgetViewSize = Size(126, 65);
+  static const Size flatWidgetViewSize = Size(200, 30);
   static const Size settingsViewSize = Size(430, 670);
 
-  // default value
+  // default values
   static const Offset _defaultOffset = Offset(500, 500);
   static const int _defaultActiveTime = 5;
   static const int _defaultIdleTime = 10;
@@ -25,7 +26,8 @@ class SettingsService {
   // keys
   static const firstLaunch = "FIRST_LAUNCH";
   static const bool _overrideSettings = false; // for testing
-  static const widgetPos = "WIDGET_POS";
+  static const spaciousWidgetPos = "SPACIOUS_WIDGET_POS";
+  static const flatWidgetPos = "FLAT_WIDGET_POS";
   static const activeRefreshTime = "ACTIVE_REFRESH_TIME";
   static const idleRefreshTime = "IDLE_REFRESH_TIME";
   static const runAtStartup = "RUN_AT_STARTUP";
@@ -39,15 +41,17 @@ class SettingsService {
   SharedPreferences get prefs => _prefs;
 
   Future<void> loadSettings() async {
-    SharedPreferences.setPrefix("flutter.floating_fs_widget:");
     _prefs = await SharedPreferences.getInstance();
     final fLaunch = prefs.getBool(firstLaunch);
     if (fLaunch == null || !fLaunch || (_overrideSettings && kDebugMode)) {
+      // set default values
+      await prefs.clear();
       await prefs.setBool(firstLaunch, true);
 
       await setActiveTime(_defaultActiveTime);
       await setIdleTime(_defaultIdleTime);
-      await setWidgetPos(_defaultOffset);
+      await setSpaciousWidgetPos(_defaultOffset);
+      await setFlatWidgetPos(_defaultOffset);
     }
   }
 
@@ -70,12 +74,24 @@ class SettingsService {
   }
 
   /* Widget pos */
-  Future<void> setWidgetPos(Offset pos) async {
-    await prefs.setString(widgetPos, "${pos.dx},${pos.dy}");
+  Future<void> setSpaciousWidgetPos(Offset pos) async {
+    await prefs.setString(spaciousWidgetPos, "${pos.dx},${pos.dy}");
   }
 
-  Offset getWidgetPos() {
-    final pos = prefs.getString(widgetPos);
+  Offset getSpaciousWidgetPos() {
+    final pos = prefs.getString(spaciousWidgetPos);
+    if (pos == null) return _defaultOffset;
+    final factors = pos.split(",");
+    return Offset(double.parse(factors[0]), double.parse(factors[1]));
+  }
+
+  // flat
+  Future<void> setFlatWidgetPos(Offset pos) async {
+    await prefs.setString(flatWidgetPos, "${pos.dx},${pos.dy}");
+  }
+
+  Offset getFlatWidgetPos() {
+    final pos = prefs.getString(flatWidgetPos);
     if (pos == null) return _defaultOffset;
     final factors = pos.split(",");
     return Offset(double.parse(factors[0]), double.parse(factors[1]));

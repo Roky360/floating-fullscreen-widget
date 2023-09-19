@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:floating_fullscreen_widget/views/settings/settings_service.dart';
 import 'package:floating_fullscreen_widget/views/views_bloc/views_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sizer/sizer.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:window_manager/window_manager.dart';
@@ -65,18 +62,18 @@ class _SettingsViewState extends State<SettingsView> {
           leading: IconButton(
             onPressed: () async {
               await updateWhitelist();
-              context.read<ViewsBloc>().add(SwitchToWidgetEvent());
+              context.read<ViewsBloc>().add(SwitchToPreviousViewEvent());
             },
             icon: const Icon(Icons.arrow_back),
           ),
           actions: [
-            TextButton(
+            IconButton(
               onPressed: () => windowManager.close(),
-              child: Text(
-                "Exit",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.red),
-              ),
+              color: Colors.red,
+              icon: const Icon(Icons.exit_to_app),
+              tooltip: "Exit",
             ),
+            const SizedBox(width: 8),
           ],
         ),
         body: SfSliderTheme(

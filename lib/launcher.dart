@@ -64,7 +64,7 @@ class _LauncherState extends State<Launcher> {
     await settingsService.loadSettings();
     await initSystemTray();
     await windowManager.setOpacity(settingsService.getOpacity());
-    await windowManager.setPosition(settingsService.getWidgetPos());
+    await windowManager.setPosition(settingsService.getSpaciousWidgetPos());
   }
 
   @override

@@ -2,14 +2,15 @@ import 'dart:async';
 import 'package:floating_fullscreen_widget/services/windows_service.dart';
 import 'package:floating_fullscreen_widget/views/settings/settings_service.dart';
 import 'package:floating_fullscreen_widget/views/views_bloc/views_bloc.dart';
+import 'package:floating_fullscreen_widget/views/widget_views/flat_view.dart';
+import 'package:floating_fullscreen_widget/views/widget_views/spacious_view.dart';
 
-import 'package:floating_fullscreen_widget/widgets/battery_widget.dart';
-import 'package:floating_fullscreen_widget/widgets/time_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'activation_bloc/activation_bloc.dart';
+import '../activation_bloc/activation_bloc.dart';
 
 class WidgetView extends StatefulWidget {
   const WidgetView({super.key});
@@ -21,10 +22,15 @@ class WidgetView extends StatefulWidget {
 class _WidgetViewState extends State<WidgetView> with WindowListener {
   final WindowsService ws = WindowsService();
   final SettingsService settingsService = SettingsService();
-  final double borderRadius = 10;
+  final double borderRadius = 7;
+
+  // controls opacity
+  late double controlsOpacity;
+  final Duration controlsOpacityAnimationDuration = const Duration(milliseconds: 300);
+  final double focusedControlsOpacity = .9;
+  final double unfocusedControlsOpacity = .5;
 
   late Timer refreshTimer;
-  late DateTime time;
 
   bool disabledUntilNextTime = false;
   bool inInteraction = false;
@@ -44,7 +50,6 @@ class _WidgetViewState extends State<WidgetView> with WindowListener {
 
       // update the window
       if (!mounted) return;
-      time = DateTime.now();
       // t = "";
 
       refreshTimer = Timer(Duration(seconds: settingsService.getActiveTime()), refresh);
@@ -79,12 +84,25 @@ class _WidgetViewState extends State<WidgetView> with WindowListener {
     await windowManager.hide();
   }
 
+  void onCloseButtonPress() async {
+    disabledUntilNextTime = true;
+    await windowManager.hide();
+  }
+
+  void onSettingsButtonPress() => context.read<ViewsBloc>().add(SwitchToSettingsEvent());
+
   @override
   void onWindowEvent(String eventName) async {
     if (eventName == "moved") {
       blurTimer.cancel();
       // save position
-      await settingsService.setWidgetPos(await windowManager.getPosition());
+      final state = context.read<ViewsBloc>().state;
+      final winPos = await windowManager.getPosition();
+      if (state is SpaciousViewState) {
+        await settingsService.setSpaciousWidgetPos(winPos);
+      } else {
+        await settingsService.setFlatWidgetPos(winPos);
+      }
       await restoreFocusToFullScreenedWindow();
     } else if (eventName != "blur") {
       blurTimer.cancel();
@@ -94,21 +112,33 @@ class _WidgetViewState extends State<WidgetView> with WindowListener {
         await restoreFocusToFullScreenedWindow();
       });
     }
+    // control control buttons opacity
+    if (eventName == "focus") {
+      setState(() => controlsOpacity = focusedControlsOpacity);
+    } else if (eventName == "blur") {
+      setState(() => controlsOpacity = unfocusedControlsOpacity);
+    }
   }
+
+  // for debugging
+  final disableFullscreenCheck = false;
 
   @override
   void initState() {
     super.initState();
     windowManager.addListener(this);
 
-    time = DateTime.now();
-
+    controlsOpacity = unfocusedControlsOpacity;
     blurTimer = Timer(Duration.zero, () {});
-    if (settingsService.getActive()) {
-      refreshTimer = Timer(Duration(seconds: settingsService.getActiveTime()), refresh);
-    } else {
-      refreshTimer = Timer(Duration.zero, () {});
-      windowManager.hide();
+    refreshTimer = Timer(Duration.zero, () {});
+
+    if (!disableFullscreenCheck || !kDebugMode) {
+      if (settingsService.getActive()) {
+        refreshTimer = Timer(Duration(seconds: settingsService.getActiveTime()), refresh);
+      } else {
+        refreshTimer = Timer(Duration.zero, () {});
+        windowManager.hide();
+      }
     }
     WidgetsBinding.instance
         .addPostFrameCallback((_) async => await restoreFocusToFullScreenedWindow());
@@ -132,86 +162,24 @@ class _WidgetViewState extends State<WidgetView> with WindowListener {
           inactive();
         }
       },
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius)),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(t, style: const TextStyle(color: Colors.white)),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                // mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.blueGrey[700],
-                        borderRadius: BorderRadius.circular(borderRadius)),
-                    child: const DragToMoveArea(
-                        child: RotatedBox(
-                      quarterTurns: 1,
-                      child: Icon(
-                        Icons.drag_handle,
-                        size: 20,
-                      ),
-                    )),
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-
-            // widgets
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // time widget
-                TimeWidget(time),
-
-                const SizedBox(height: 4),
-
-                // battery widget
-                BatteryWidget(),
-              ],
-            ),
-            const Spacer(),
-
-            // right buttons
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // hide
-                IconButton(
-                  onPressed: () async {
-                    disabledUntilNextTime = true;
-                    await windowManager.hide();
-                  },
-                  padding: const EdgeInsets.all(4),
-                  iconSize: 14,
-                  constraints: const BoxConstraints(
-                    maxWidth: 30,
-                    maxHeight: 30,
-                  ),
-                  icon: const Icon(Icons.close),
-                ),
-                // const Spacer(),
-
-                // disable
-                IconButton(
-                  onPressed: () => context.read<ViewsBloc>().add(SwitchToSettingsEvent()),
-                  padding: const EdgeInsets.all(4),
-                  iconSize: 14,
-                  constraints: const BoxConstraints(
-                    maxWidth: 30,
-                    maxHeight: 30,
-                  ),
-                  icon: const Icon(Icons.settings),
-                ),
-              ],
-            ),
-          ],
-        ),
+      child: BlocBuilder<ViewsBloc, ViewsState>(
+        builder: (context, state) {
+          if (state is SpaciousViewState) {
+            return SpaciousWidgetView(
+              onCloseButtonPress: onCloseButtonPress,
+              onSettingsButtonPress: onSettingsButtonPress,
+              controlsOpacity: controlsOpacity,
+              controlsOpacityAnimationDuration: controlsOpacityAnimationDuration,
+            );
+          } else {
+            return FlatWidgetView(
+              controlsOpacity: controlsOpacity,
+              controlsOpacityAnimationDuration: controlsOpacityAnimationDuration,
+              onCloseButtonPress: onCloseButtonPress,
+              onSettingsButtonPress: onSettingsButtonPress,
+            );
+          }
+        },
       ),
     );
   }

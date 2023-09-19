@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class TimeWidget extends StatelessWidget {
-  final DateTime time;
+  final DateTime? time;
 
-  const TimeWidget(this.time, {super.key});
+  const TimeWidget({super.key, this.time});
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      DateFormat.Hm().format(time),
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 15),
+      DateFormat.Hm().format(time ?? DateTime.now()),
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Colors.white,
+            fontSize: 16,
+          ),
     );
   }
 }

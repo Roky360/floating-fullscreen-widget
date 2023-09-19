@@ -5,4 +5,8 @@ abstract class ViewsEvent {}
 
 class SwitchToSettingsEvent extends ViewsEvent {}
 
-class SwitchToWidgetEvent extends ViewsEvent {}
+class SwitchToPreviousViewEvent extends ViewsEvent {}
+
+class SwitchToSpaciousViewEvent extends ViewsEvent {}
+
+class SwitchToFlatViewEvent extends ViewsEvent {}

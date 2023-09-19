@@ -12,7 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
-  const initialSize = SettingsService.widgetViewSize;
+  const initialSize = SettingsService.spaciousWidgetViewSize;
   WindowOptions windowOptions = const WindowOptions(
     size: initialSize,
     title: "Floating Fullscreen Widget",

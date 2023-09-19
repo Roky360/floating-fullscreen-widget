@@ -12,10 +12,12 @@ part 'views_state.dart';
 class ViewsBloc extends Bloc<ViewsEvent, ViewsState> {
   final SettingsService settingsService = SettingsService();
   bool wasActive = true;
+  late ViewsState prevView = SpaciousViewState();
 
-  ViewsBloc() : super(WidgetViewState()) {
+  ViewsBloc() : super(SpaciousViewState()) {
     on<SwitchToSettingsEvent>((event, emit) async {
       wasActive = await windowManager.isVisible();
+      prevView = state;
 
       await windowManager.setSize(SettingsService.settingsViewSize, animate: true);
       await windowManager.center(animate: true);
@@ -25,13 +27,30 @@ class ViewsBloc extends Bloc<ViewsEvent, ViewsState> {
       emit(SettingsViewState());
     });
 
-    on<SwitchToWidgetEvent>((event, emit) async {
-      if (!wasActive) await windowManager.hide();
-      emit(WidgetViewState());
-      await windowManager.setSize(SettingsService.widgetViewSize, animate: true);
-      await windowManager.setPosition(settingsService.getWidgetPos(), animate: true);
-      await windowManager.setOpacity(settingsService.getOpacity());
+    on<SwitchToPreviousViewEvent>((event, emit) async {
+      if (prevView is SpaciousViewState) {
+        add(SwitchToSpaciousViewEvent());
+      } else if (prevView is FlatViewState) {
+        add(SwitchToFlatViewEvent());
+      }
+    });
 
+    on<SwitchToSpaciousViewEvent>((event, emit) async {
+      if (!wasActive) await windowManager.hide();
+      emit(SpaciousViewState());
+      await windowManager.setMinimumSize(SettingsService.spaciousWidgetViewSize);
+      await windowManager.setSize(SettingsService.spaciousWidgetViewSize, animate: true);
+      await windowManager.setPosition(settingsService.getSpaciousWidgetPos(), animate: true);
+      await windowManager.setOpacity(settingsService.getOpacity());
+    });
+
+    on<SwitchToFlatViewEvent>((event, emit) async {
+      if (!wasActive) await windowManager.hide();
+      emit(FlatViewState());
+      await windowManager.setMinimumSize(SettingsService.flatWidgetViewSize);
+      await windowManager.setSize(SettingsService.flatWidgetViewSize, animate: true);
+      await windowManager.setPosition(settingsService.getFlatWidgetPos(), animate: true);
+      await windowManager.setOpacity(settingsService.getOpacity());
     });
   }
 }
