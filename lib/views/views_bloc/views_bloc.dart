@@ -37,6 +37,7 @@ class ViewsBloc extends Bloc<ViewsEvent, ViewsState> {
 
     on<SwitchToSpaciousViewEvent>((event, emit) async {
       if (!wasActive) await windowManager.hide();
+      settingsService.setMode(DisplayMode.spacious);
       emit(SpaciousViewState());
       await windowManager.setMinimumSize(SettingsService.spaciousWidgetViewSize);
       await windowManager.setSize(SettingsService.spaciousWidgetViewSize, animate: true);
@@ -46,6 +47,7 @@ class ViewsBloc extends Bloc<ViewsEvent, ViewsState> {
 
     on<SwitchToFlatViewEvent>((event, emit) async {
       if (!wasActive) await windowManager.hide();
+      settingsService.setMode(DisplayMode.flat);
       emit(FlatViewState());
       await windowManager.setMinimumSize(SettingsService.flatWidgetViewSize);
       await windowManager.setSize(SettingsService.flatWidgetViewSize, animate: true);

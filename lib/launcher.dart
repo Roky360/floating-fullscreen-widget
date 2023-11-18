@@ -65,6 +65,15 @@ class _LauncherState extends State<Launcher> {
     await initSystemTray();
     await windowManager.setOpacity(settingsService.getOpacity());
     await windowManager.setPosition(settingsService.getSpaciousWidgetPos());
+    // switch to saved display mode
+    switch (settingsService.getMode()) {
+      case DisplayMode.spacious:
+        viewsBloc.add(SwitchToSpaciousViewEvent());
+        break;
+      case DisplayMode.flat:
+        viewsBloc.add(SwitchToFlatViewEvent());
+        break;
+    }
   }
 
   @override

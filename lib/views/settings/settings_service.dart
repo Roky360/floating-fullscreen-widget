@@ -4,6 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_tray/system_tray.dart';
 
+enum DisplayMode {
+  spacious,
+  flat,
+}
+
 class SettingsService {
   static final SettingsService _settingsService = SettingsService._();
 
@@ -34,6 +39,7 @@ class SettingsService {
   static const active = "ACTIVE";
   static const opacity = "OPACITY";
   static const whitelist = "WHITELIST";
+  static const currentMode = "CURR_MODE";
 
   late final MenuItemCheckbox activeTrayCheckbox;
   late final SharedPreferences _prefs;
@@ -52,6 +58,7 @@ class SettingsService {
       await setIdleTime(_defaultIdleTime);
       await setSpaciousWidgetPos(_defaultOffset);
       await setFlatWidgetPos(_defaultOffset);
+      await setMode(DisplayMode.spacious);
     }
   }
 
@@ -143,5 +150,17 @@ class SettingsService {
 
   String getWhitelist() {
     return prefs.getString(whitelist) ?? "";
+  }
+
+  /* mode */
+  Future<void> setMode(DisplayMode mode) async {
+    await prefs.setString(currentMode, mode.name);
+  }
+
+  DisplayMode getMode() {
+    final String? modeRaw = prefs.getString(currentMode);
+    return modeRaw != null
+        ? DisplayMode.values.firstWhere((e) => e.name == modeRaw)
+        : DisplayMode.spacious;
   }
 }
